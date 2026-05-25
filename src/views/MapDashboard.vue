@@ -8,7 +8,9 @@ import GoogleMap from '../components/GoogleMap.vue'
     <header class="hero-header">
       <div class="badge animate-fade">Fase 2: Mapa Ativo</div>
       <h1 class="main-title">Posto<span class="highlight">Confiável</span></h1>
-      <p class="subtitle">Encontre combustível de qualidade com avaliações reais e contexto de veículo.</p>
+      <p class="subtitle">
+        Encontre combustível de qualidade com avaliações reais e contexto de veículo.
+      </p>
     </header>
 
     <!-- Main Content Layout -->
@@ -19,14 +21,19 @@ import GoogleMap from '../components/GoogleMap.vue'
           <span class="panel-icon">🔍</span>
           <h2>Pesquisa & Filtros</h2>
         </div>
-        
+
         <p class="panel-desc">
           Encontre postos específicos ou filtre por combustíveis e melhores avaliações.
         </p>
 
         <div class="search-box">
           <span class="search-icon">📍</span>
-          <input type="text" placeholder="Pesquisar posto ou local..." class="search-input" disabled />
+          <input
+            type="text"
+            placeholder="Pesquisar posto ou local..."
+            class="search-input"
+            disabled
+          />
         </div>
 
         <div class="divider"></div>
@@ -64,7 +71,7 @@ import GoogleMap from '../components/GoogleMap.vue'
             <span>Google Maps Live</span>
           </div>
         </div>
-        
+
         <!-- The actual Map wrapper -->
         <div class="map-wrapper-card">
           <GoogleMap />
