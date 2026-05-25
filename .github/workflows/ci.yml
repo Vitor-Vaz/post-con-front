@@ -1,0 +1,34 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies (Clean Install)
+        run: npm ci
+
+      # Note: Uncomment these when lint and test scripts are added to package.json
+      # - name: Run Lint Check
+      #   run: npm run lint
+      #
+      # - name: Run Unit Tests
+      #   run: npm run test
+
+      - name: Strict TypeScript Check & Production Build
+        run: npm run build

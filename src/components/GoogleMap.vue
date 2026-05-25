@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Loader } from '@googlemaps/js-api-loader'
+import { extractBrandFromName } from '../utils/brand'
 
 interface Props {
   center?: google.maps.LatLngLiteral
@@ -17,62 +18,62 @@ let map: google.maps.Map | null = null
 const markersList = ref<google.maps.Marker[]>([])
 
 const darkMapStyle: google.maps.MapTypeStyle[] = [
-  { elementType: "geometry", stylers: [{ color: "#0f172a" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#0f172a" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#94a3b8" }] },
+  { elementType: 'geometry', stylers: [{ color: '#0f172a' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0f172a' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#94a3b8' }] },
   {
-    featureType: "administrative.locality",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#cbd5e1" }]
+    featureType: 'administrative.locality',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#cbd5e1' }]
   },
   {
-    featureType: "poi",
-    stylers: [{ visibility: "off" }]
+    featureType: 'poi',
+    stylers: [{ visibility: 'off' }]
   },
   {
-    featureType: "road",
-    elementType: "geometry",
-    stylers: [{ color: "#1e293b" }]
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [{ color: '#1e293b' }]
   },
   {
-    featureType: "road",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#0f172a" }]
+    featureType: 'road',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#0f172a' }]
   },
   {
-    featureType: "road.highway",
-    elementType: "geometry",
-    stylers: [{ color: "#334155" }]
+    featureType: 'road.highway',
+    elementType: 'geometry',
+    stylers: [{ color: '#334155' }]
   },
   {
-    featureType: "road.highway",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#1e293b" }]
+    featureType: 'road.highway',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#1e293b' }]
   },
   {
-    featureType: "road.highway",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#cbd5e1" }]
+    featureType: 'road.highway',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#cbd5e1' }]
   },
   {
-    featureType: "transit",
-    elementType: "geometry",
-    stylers: [{ color: "#1e293b" }]
+    featureType: 'transit',
+    elementType: 'geometry',
+    stylers: [{ color: '#1e293b' }]
   },
   {
-    featureType: "transit",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#94a3b8" }]
+    featureType: 'transit',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#94a3b8' }]
   },
   {
-    featureType: "water",
-    elementType: "geometry",
-    stylers: [{ color: "#020617" }]
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [{ color: '#020617' }]
   },
   {
-    featureType: "water",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#475569" }]
+    featureType: 'water',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#475569' }]
   }
 ]
 
@@ -85,27 +86,23 @@ interface StationData {
   score: number
   reviewsCount: number
   photoUrl?: string
-}
-
-const extractBrandFromName = (name: string): string => {
-  const lowercase = name.toLowerCase()
-  if (lowercase.includes("petrobras") || lowercase.includes("br")) return "Petrobras"
-  if (lowercase.includes("ipiranga")) return "Ipiranga"
-  if (lowercase.includes("shell")) return "Shell"
-  if (lowercase.includes("ale")) return "Ale"
-  return "Outra"
+  priceGas?: string
 }
 
 const activeStation = ref<StationData | null>(null)
 
-const getMarkerSymbol = (googleMaps: typeof google, score: number, reviewsCount: number): google.maps.Symbol => {
-  let color = "#10b981"
+const getMarkerSymbol = (
+  googleMaps: typeof google,
+  score: number,
+  reviewsCount: number
+): google.maps.Symbol => {
+  let color = '#10b981'
   if (reviewsCount === 0) {
-    color = "#64748b"
+    color = '#64748b'
   } else if (score < 3.0) {
-    color = "#ef4444"
+    color = '#ef4444'
   } else if (score < 4.5) {
-    color = "#f59e0b"
+    color = '#f59e0b'
   }
 
   return {
@@ -126,8 +123,8 @@ onMounted(async () => {
 
   const loader = new Loader({
     apiKey: apiKey,
-    version: "weekly",
-    libraries: ["places"]
+    version: 'weekly',
+    libraries: ['places']
   })
 
   try {
@@ -142,12 +139,12 @@ onMounted(async () => {
       fullscreenControl: false
     })
 
-    map.addListener("click", () => {
+    map.addListener('click', () => {
       activeStation.value = null
     })
 
     const clearMarkers = () => {
-      markersList.value.forEach(m => m.setMap(null))
+      markersList.value.forEach((m) => m.setMap(null))
       markersList.value = []
     }
 
@@ -156,9 +153,11 @@ onMounted(async () => {
       if (!center) return
 
       try {
-        const { Place } = await googleInstance.maps.importLibrary("places") as google.maps.PlacesLibrary
+        const { Place } = (await googleInstance.maps.importLibrary(
+          'places'
+        )) as google.maps.PlacesLibrary
 
-        const request: google.maps.SearchNearbyRequest = {
+        const request: google.maps.places.SearchNearbyRequest = {
           fields: ['id', 'displayName', 'location', 'photos'],
           locationRestriction: {
             center: center,
@@ -175,8 +174,8 @@ onMounted(async () => {
           for (const place of places) {
             if (!place.location) continue
 
-            const placeId = place.id || ""
-            const name = place.displayName || "Posto de Combustível"
+            const placeId = place.id || ''
+            const name = place.displayName || 'Posto de Combustível'
             const lat = place.location.lat()
             const lng = place.location.lng()
 
@@ -190,15 +189,15 @@ onMounted(async () => {
                 score = data.score || 0
                 reviewsCount = data.reviews_count || 0
               }
-            } catch (err) {
+            } catch {
               // Silently fallback on network error
             }
 
-            let photoUrl = ""
+            let photoUrl = ''
             if (place.photos && place.photos.length > 0) {
               try {
-                photoUrl = place.photos[0].getURI({ maxHeight: 180 }) || ""
-              } catch (photoErr) {
+                photoUrl = place.photos[0].getURI({ maxHeight: 180 }) || ''
+              } catch {
                 // Ignore photo error
               }
             }
@@ -211,7 +210,8 @@ onMounted(async () => {
               lng,
               score,
               reviewsCount,
-              photoUrl
+              photoUrl,
+              priceGas: 'R$ 5,89'
             }
 
             const marker = new googleInstance.maps.Marker({
@@ -221,7 +221,7 @@ onMounted(async () => {
               icon: getMarkerSymbol(googleInstance, score, reviewsCount)
             })
 
-            marker.addListener("click", (event: google.maps.MapMouseEvent) => {
+            marker.addListener('click', (event: google.maps.MapMouseEvent) => {
               activeStation.value = station
               if (event && event.stop) {
                 event.stop()
@@ -233,25 +233,25 @@ onMounted(async () => {
 
           console.log(`Loaded ${places.length} real gas stations from modern Places API!`)
         } else {
-          console.log("No gas stations found nearby.")
+          console.log('No gas stations found nearby.')
         }
       } catch (error) {
-        console.error("Failed to fetch nearby gas stations via modern Places API:", error)
+        console.error('Failed to fetch nearby gas stations via modern Places API:', error)
       }
     }
 
-    map.addListener("idle", () => {
+    map.addListener('idle', () => {
       fetchNearbyGasStations()
     })
 
-    console.log("Google Map & Modern Places Library loaded successfully!")
+    console.log('Google Map & Modern Places Library loaded successfully!')
   } catch (error) {
-    console.error("Failed to load Google Maps API:", error)
+    console.error('Failed to load Google Maps API:', error)
   }
 })
 
 onUnmounted(() => {
-  markersList.value.forEach(marker => marker.setMap(null))
+  markersList.value.forEach((marker) => marker.setMap(null))
   markersList.value = []
   map = null
 })
@@ -260,7 +260,7 @@ onUnmounted(() => {
 <template>
   <div class="map-wrapper">
     <div ref="mapRef" class="map-container"></div>
-    
+
     <!-- Premium Slide-Up Hover Card -->
     <transition name="slide-up">
       <div v-if="activeStation" class="station-hover-card glass-panel">
@@ -274,7 +274,7 @@ onUnmounted(() => {
           <h4 class="station-title">{{ activeStation.name }}</h4>
           <span class="station-brand-badge">{{ activeStation.brand }}</span>
         </div>
-        
+
         <div class="card-body">
           <div v-if="activeStation.reviewsCount > 0" class="rating-info">
             <div class="rating-row">
@@ -289,7 +289,7 @@ onUnmounted(() => {
               <span class="price-value">{{ activeStation.priceGas }}</span>
             </div>
           </div>
-          
+
           <div v-else class="no-reviews-panel">
             <div class="cta-pulse-badge">
               <span class="pulse-ring"></span>
@@ -321,7 +321,9 @@ onUnmounted(() => {
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .station-hover-card {
