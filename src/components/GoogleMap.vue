@@ -171,6 +171,32 @@ onMounted(async () => {
         if (places && places.length > 0) {
           clearMarkers()
 
+          const placeIds = places.map((p) => p.id).filter(Boolean) as string[]
+          const backendStations = new Map<string, { total_score: number; review_count: number }>()
+
+          if (placeIds.length > 0) {
+            try {
+              const res = await fetch(
+                `http://localhost:8080/api/v1/stations?station_ids=${encodeURIComponent(
+                  JSON.stringify(placeIds)
+                )}`
+              )
+              if (res.ok) {
+                const responseData = await res.json()
+                if (responseData && Array.isArray(responseData.data)) {
+                  for (const s of responseData.data) {
+                    backendStations.set(s.place_id, {
+                      total_score: s.total_score || 0,
+                      review_count: s.review_count || 0
+                    })
+                  }
+                }
+              }
+            } catch {
+              // Silently ignore network errors and fallback to defaults
+            }
+          }
+
           for (const place of places) {
             if (!place.location) continue
 
@@ -179,19 +205,9 @@ onMounted(async () => {
             const lat = place.location.lat()
             const lng = place.location.lng()
 
-            let score = 0
-            let reviewsCount = 0
-
-            try {
-              const res = await fetch(`http://localhost:8080/api/v1/station/${placeId}`)
-              if (res.ok) {
-                const data = await res.json()
-                score = data.score || 0
-                reviewsCount = data.reviews_count || 0
-              }
-            } catch {
-              // Silently fallback on network error
-            }
+            const dbData = backendStations.get(placeId)
+            const score = dbData?.total_score || 0
+            const reviewsCount = dbData?.review_count || 0
 
             let photoUrl = ''
             if (place.photos && place.photos.length > 0) {
