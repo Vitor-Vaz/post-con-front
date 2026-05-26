@@ -13,6 +13,10 @@ const props = withDefaults(defineProps<Props>(), {
   zoom: 14
 })
 
+const emit = defineEmits<{
+  (e: 'open-add-review', station: StationData): void
+}>()
+
 const mapRef = ref<HTMLDivElement | null>(null)
 let map: google.maps.Map | null = null
 const markersList = ref<google.maps.Marker[]>([])
@@ -87,6 +91,7 @@ interface StationData {
   reviewsCount: number
   photoUrl?: string
   priceGas?: string
+  address?: string
 }
 
 const activeStation = ref<StationData | null>(null)
@@ -158,7 +163,7 @@ onMounted(async () => {
         )) as google.maps.PlacesLibrary
 
         const request: google.maps.places.SearchNearbyRequest = {
-          fields: ['id', 'displayName', 'location', 'photos'],
+          fields: ['id', 'displayName', 'location', 'photos', 'formattedAddress'],
           locationRestriction: {
             center: center,
             radius: 1500
@@ -177,7 +182,7 @@ onMounted(async () => {
           if (placeIds.length > 0) {
             try {
               const res = await fetch(
-                `http://localhost:8080/api/v1/stations?station_ids=${encodeURIComponent(
+                `/api/v1/stations?station_ids=${encodeURIComponent(
                   JSON.stringify(placeIds)
                 )}`
               )
@@ -227,7 +232,8 @@ onMounted(async () => {
               score,
               reviewsCount,
               photoUrl,
-              priceGas: 'R$ 5,89'
+              priceGas: 'R$ 5,89',
+              address: place.formattedAddress || ''
             }
 
             const marker = new googleInstance.maps.Marker({
@@ -307,10 +313,10 @@ onUnmounted(() => {
           </div>
 
           <div v-else class="no-reviews-panel">
-            <div class="cta-pulse-badge">
+            <button class="cta-pulse-badge" @click="emit('open-add-review', activeStation!)">
               <span class="pulse-ring"></span>
               <span class="cta-text">✨ Seja o primeiro a avaliar!</span>
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -473,6 +479,20 @@ onUnmounted(() => {
   padding: 0.5rem 1rem;
   border-radius: 10px;
   overflow: hidden;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cta-pulse-badge:hover {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.25) 0%, rgba(59, 130, 246, 0.25) 100%);
+  border-color: rgba(147, 51, 234, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.2);
+}
+
+.cta-pulse-badge:active {
+  transform: translateY(0);
 }
 
 .cta-text {
