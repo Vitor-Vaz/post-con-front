@@ -1,5 +1,35 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import GoogleMap from '../components/GoogleMap.vue'
+import AddStationReviewModal from '../components/AddStationReviewModal.vue'
+
+interface StationData {
+  placeId: string
+  name: string
+  brand: string
+  lat: number
+  lng: number
+  score: number
+  reviewsCount: number
+  photoUrl?: string
+  priceGas?: string
+  address?: string
+}
+
+const isModalOpen = ref(false)
+const selectedStation = ref<StationData | null>(null)
+const mapKey = ref(0)
+
+const handleOpenAddReview = (station: StationData) => {
+  selectedStation.value = station
+  isModalOpen.value = true
+}
+
+const handleReviewSuccess = () => {
+  isModalOpen.value = false
+  // Increment map key to force GoogleMap component reload, fetching new state from backend
+  mapKey.value++
+}
 </script>
 
 <template>
@@ -74,10 +104,18 @@ import GoogleMap from '../components/GoogleMap.vue'
 
         <!-- The actual Map wrapper -->
         <div class="map-wrapper-card">
-          <GoogleMap />
+          <GoogleMap :key="mapKey" @open-add-review="handleOpenAddReview" />
         </div>
       </section>
     </main>
+
+    <!-- Modal for adding station with first review -->
+    <AddStationReviewModal
+      :is-open="isModalOpen"
+      :station="selectedStation"
+      @close="isModalOpen = false"
+      @success="handleReviewSuccess"
+    />
   </div>
 </template>
 
