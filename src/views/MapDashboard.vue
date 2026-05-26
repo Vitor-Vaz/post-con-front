@@ -18,10 +18,12 @@ interface StationData {
 
 const isModalOpen = ref(false)
 const selectedStation = ref<StationData | null>(null)
+const selectedPlaceId = ref<string | null>(null)
 const mapKey = ref(0)
 
 const handleOpenAddReview = (station: StationData) => {
   selectedStation.value = station
+  selectedPlaceId.value = station.placeId
   isModalOpen.value = true
 }
 
@@ -102,9 +104,12 @@ const handleReviewSuccess = () => {
           </div>
         </div>
 
-        <!-- The actual Map wrapper -->
         <div class="map-wrapper-card">
-          <GoogleMap :key="mapKey" @open-add-review="handleOpenAddReview" />
+          <GoogleMap
+            :key="mapKey"
+            :initial-selected-place-id="selectedPlaceId"
+            @open-add-review="handleOpenAddReview"
+          />
         </div>
       </section>
     </main>

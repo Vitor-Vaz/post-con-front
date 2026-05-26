@@ -52,3 +52,41 @@ export async function createReviewWithStation(
 
   return response.json()
 }
+
+export interface CreateReviewInput {
+  place_id: string
+  user_id: string
+  rating: number
+}
+
+/**
+ * Adiciona uma avaliação simples a um posto que já existe.
+ * Rota: POST /review
+ */
+export async function createReview(
+  input: CreateReviewInput
+): Promise<ReviewResponse> {
+  const response = await fetch(`${API_BASE_URL}/review`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(input)
+  })
+
+  if (!response.ok) {
+    let errorMessage = 'Erro ao processar a requisição no servidor.'
+    try {
+      const errBody = await response.json()
+      if (errBody && errBody.error) {
+        errorMessage = errBody.error
+      }
+    } catch {
+      // Ignorar falha no parse do erro
+    }
+    throw new Error(errorMessage)
+  }
+
+  return response.json()
+}
+
