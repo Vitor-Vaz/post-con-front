@@ -6,11 +6,13 @@ import { extractBrandFromName } from '../utils/brand'
 interface Props {
   center?: google.maps.LatLngLiteral
   zoom?: number
+  initialSelectedPlaceId?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   center: () => ({ lat: -23.55052, lng: -46.633308 }),
-  zoom: 14
+  zoom: 14,
+  initialSelectedPlaceId: null
 })
 
 const emit = defineEmits<{
@@ -236,6 +238,10 @@ onMounted(async () => {
               address: place.formattedAddress || ''
             }
 
+            if (props.initialSelectedPlaceId && placeId === props.initialSelectedPlaceId) {
+              activeStation.value = station
+            }
+
             const marker = new googleInstance.maps.Marker({
               position: place.location,
               map: map,
@@ -310,6 +316,10 @@ onUnmounted(() => {
               <span class="price-label">Gasolina:</span>
               <span class="price-value">{{ activeStation.priceGas }}</span>
             </div>
+            
+            <button class="write-review-btn" @click="emit('open-add-review', activeStation!)">
+              <span class="btn-icon">✍️</span> Avaliar Posto
+            </button>
           </div>
 
           <div v-else class="no-reviews-panel">
@@ -595,5 +605,47 @@ onUnmounted(() => {
   bottom: 0;
   background: linear-gradient(to bottom, rgba(15, 23, 42, 0) 40%, rgba(15, 23, 42, 0.85) 100%);
   pointer-events: none;
+}
+
+.rating-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.write-review-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0.35rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.write-review-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(147, 51, 234, 0.3);
+  color: #ffffff;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.15);
+}
+
+.write-review-btn:active {
+  transform: translateY(0);
+}
+
+.btn-icon {
+  font-size: 0.9rem;
 }
 </style>

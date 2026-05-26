@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { createReviewWithStation } from '../services/api'
+import { createReviewWithStation, createReview } from '../services/api'
 
 interface StationData {
   placeId: string
@@ -70,16 +70,24 @@ const handleSubmit = async () => {
   errorMessage.value = ''
 
   try {
-    await createReviewWithStation({
-      place_id: props.station.placeId,
-      rating: rating.value,
-      station: {
-        name: props.station.name,
-        address: props.station.address,
-        latitude: props.station.lat,
-        longitude: props.station.lng
-      }
-    })
+    if (props.station.reviewsCount > 0) {
+      await createReview({
+        place_id: props.station.placeId,
+        user_id: crypto.randomUUID(),
+        rating: rating.value
+      })
+    } else {
+      await createReviewWithStation({
+        place_id: props.station.placeId,
+        rating: rating.value,
+        station: {
+          name: props.station.name,
+          address: props.station.address,
+          latitude: props.station.lat,
+          longitude: props.station.lng
+        }
+      })
+    }
 
     submitStatus.value = 'success'
     setTimeout(() => {
@@ -87,7 +95,7 @@ const handleSubmit = async () => {
     }, 1800) // Delay to let user see success animation
   } catch (error: any) {
     submitStatus.value = 'error'
-    errorMessage.value = error.message || 'Erro inesperado ao cadastrar o posto.'
+    errorMessage.value = error.message || 'Erro inesperado ao processar a avaliação.'
   } finally {
     isSubmitting.value = false
   }
@@ -108,9 +116,9 @@ const handleSubmit = async () => {
           <div v-if="submitStatus !== 'success'" class="form-container">
             <header class="modal-header">
               <span class="modal-icon">✨</span>
-              <h2>Adicionar Novo Posto</h2>
+              <h2>{{ station?.reviewsCount && station.reviewsCount > 0 ? 'Avaliar Posto' : 'Adicionar Novo Posto' }}</h2>
               <p class="modal-desc">
-                Este posto ainda não foi avaliado no PostoConfiável. Seja o primeiro a registrar e avaliar!
+                {{ station?.reviewsCount && station.reviewsCount > 0 ? 'Deixe sua avaliação e ajude a manter a nota de confiabilidade deste posto atualizada!' : 'Este posto ainda não foi avaliado no PostoConfiável. Seja o primeiro a registrar e avaliar!' }}
               </p>
             </header>
 
