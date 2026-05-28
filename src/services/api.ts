@@ -10,6 +10,15 @@ export interface CreateStationInput {
 export interface CreateReviewWithStationInput {
   place_id: string
   rating: number
+  comment?: string | null
+  rating_fuel_quality?: number | null
+  rating_pump_honesty?: number | null
+  rating_service?: number | null
+  rating_price_pressure?: number | null
+  fuel_type?: string | null
+  flag_anp_interdiction?: boolean
+  flag_oil_change_scam?: boolean
+  flag_commercial_harassment?: boolean
   station: CreateStationInput
 }
 
@@ -57,6 +66,15 @@ export interface CreateReviewInput {
   place_id: string
   user_id: string
   rating: number
+  comment?: string | null
+  rating_fuel_quality?: number | null
+  rating_pump_honesty?: number | null
+  rating_service?: number | null
+  rating_price_pressure?: number | null
+  fuel_type?: string | null
+  flag_anp_interdiction?: boolean
+  flag_oil_change_scam?: boolean
+  flag_commercial_harassment?: boolean
 }
 
 /**
