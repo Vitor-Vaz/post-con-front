@@ -107,6 +107,7 @@ const handleReviewSuccess = () => {
         <div class="map-wrapper-card">
           <GoogleMap
             :key="mapKey"
+            :zoom="15"
             :initial-selected-place-id="selectedPlaceId"
             @open-add-review="handleOpenAddReview"
           />
