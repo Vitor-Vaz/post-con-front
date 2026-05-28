@@ -11,7 +11,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   center: () => ({ lat: -23.55052, lng: -46.633308 }),
-  zoom: 14,
+  zoom: 15,
   initialSelectedPlaceId: null
 })
 
